@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="gitHubApp">
+
+<head>
+    <meta charset="UTF-8">
+    <title>GitHub Profile Searcher</title>
+</head>
+
+<body>
+    <div ng-controller="gitController">
+        <h1>{{title}}</h1>
+        <form ng-submit="">
+        <input autofocus="" ng-model="username" type="text" placeholder="User Name here">
+        <button ng-click="getInfoProfile()">Get Repos</button>
+        </form>
+        <h4>Name: {{ profile.name }}</h4>
+        <h4>Login: {{ profile.login }}</h4>
+        <h4>Location: {{ profile.location }}</h4>
+        <h4>Date of creation: {{ profile.created_at }}</h4>
+        <h4>Last Update: {{ profile.updated_at }}</h4>
+        <h4>Number of Repos: {{ profile.public_repos }}</h4>
+        <ul>
+            <li ng-repeat="repo in repos">{{repo.name}} 
+            	<ul>
+            		<li>Description: {{repo.description}}</li>
+            		<li>Language: {{repo.language}}</li>
+            		<li>Last Update: {{repo.updated_at}}</li>
+            	</ul>
+            </li>
+        </ul>
+    </div>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular.js"></script>
+    <script>
+    angular.module("gitHubApp", [])
+        .controller("gitController", function($scope, gitService) {
+            $scope.title = "RepoSearcher - A GitHub Profile Searcher"
+            $scope.getInfoProfile = function() {
+
+                var userName = $scope.username
+                $scope.username = ""
+                gitService.getInfoFromProfile(userName)
+                	.then( function(response) {
+                		console.log(response.data)
+                		$scope.profile = response.data
+
+                	})
+                gitService.getRepos(userName)
+                	.then( function(response) {
+                		console.log(response.data)
+                		$scope.repos = response.data
+                	})
+
+            }
+        })
+
+    .factory('gitService', function($http) {
+
+        function _getInfo( username ) {
+            var url = "https://api.github.com/users/" + username 
+            return $http.get(url)
+        }
+        function _getRepos ( username ) {
+        	var url = "https://api.github.com/users/" + username + "/repos"
+        	return $http.get(url)
+        }
+
+        return {
+        	getInfoFromProfile: _getInfo,
+        	getRepos: _getRepos
+        }
+    })
+    </script>
+</body>
+
+</html>
